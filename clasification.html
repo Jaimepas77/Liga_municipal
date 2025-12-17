@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clasificación – Juegos Deportivos Madrid</title>
+
+<style>
+body {
+    font-family: system-ui, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    font-size: 18px;
+}
+
+button {
+    margin-bottom: 10px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 700px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 13px;
+}
+
+th {
+    background: #f0f0f0;
+}
+
+td.team {
+    text-align: left;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Clasificación – Competición 8979 (Grupo 29514)</h1>
+<button onclick="loadData()">Cargar clasificación</button>
+
+<table id="table">
+    <thead>
+        <tr>
+            <th>Pos</th>
+            <th>Equipo</th>
+            <th>Pts</th>
+            <th>G</th>
+            <th>E</th>
+            <th>P</th>
+            <th>GF</th>
+            <th>GC</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const CSV_URL = "https://datos.madrid.es/egob/catalogo/211549-1-juegos-deportivos-actual.csv";
+const TARGET_COMPETITION = "8979";
+const TARGET_GROUP = "29514";
+
+async function loadData() {
+    const resp = await fetch(CSV_URL);
+    const text = await resp.text();
+
+    const rows = parseCSV(text);
+    const header = rows[0];
+    const data = rows.slice(1);
+
+    const idx = Object.fromEntries(header.map((h, i) => [h, i]));
+
+    const filtered = data
+        .filter(r =>
+            r[idx.Codigo_competicion]?.trim() === TARGET_COMPETITION &&
+            r[idx.Codigo_grupo]?.trim() === TARGET_GROUP
+        )
+        .sort((a, b) => Number(a[idx.Posicion]) - Number(b[idx.Posicion]));
+
+    const tbody = document.querySelector("#table tbody");
+    tbody.innerHTML = "";
+
+    for (const r of filtered) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${r[idx.Posicion]}</td>
+            <td class="team">${r[idx.Nombre_equipo]}</td>
+            <td>${r[idx.Puntos]}</td>
+            <td>${r[idx.Partidos_ganados]}</td>
+            <td>${r[idx.Partidos_empatados]}</td>
+            <td>${r[idx.Partidos_perdidos]}</td>
+            <td>${r[idx.Goles_favor]}</td>
+            <td>${r[idx.Goles_contra]}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    if (filtered.length === 0) {
+        alert("No data found for selected competition/group");
+    }
+}
+
+/* Minimal CSV parser for semicolon-separated files */
+function parseCSV(text) {
+    return text
+        .trim()
+        .split("\n")
+        .map(line =>
+            line.split(";").map(cell =>
+                cell.replace(/^"|"$/g, "")
+            )
+        );
+}
+</script>
+
+</body>
+</html>
