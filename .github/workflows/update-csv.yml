@@ -1,0 +1,47 @@
+name: Update Standings CSV
+
+on:
+  schedule:
+    # Runs at 08:00 UTC every day. You can change this time.
+    # minute hour day month day_of_week
+    # Example: '15 14 * * 1-5' would run at 14:15 UTC every weekday (Mon-Fri)
+    - cron: '0 12 * * 2-5'
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    # These permissions are required to allow the Action to push changes
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download and Process CSV
+        run: |
+          # 1. Download the file from the Madrid data portal
+          # 2. Convert encoding from ISO-8859-1 (common in Spanish gov data) to UTF-8
+          # 3. Save it as clasificaciones.csv
+          curl -L "https://datos.madrid.es/egob/catalogo/211549-1-juegos-deportivos-actual.csv" | iconv -f ISO-8859-1 -t UTF-8 > clasificaciones.csv
+          
+          echo "Download complete."
+
+      - name: Commit and Push changes
+        run: |
+          # Configure git bot user
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          
+          # Stage the file
+          git add clasificaciones.csv
+          
+          # Check if there are actual changes before committing
+          if git diff --staged --quiet; then
+            echo "No changes detected. Skipping commit."
+          else
+            git commit -m "Auto-update: clasificaciones.csv"
+            git push
+          fi
