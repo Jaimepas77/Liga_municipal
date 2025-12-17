@@ -14,7 +14,7 @@ h1 {
     font-size: 18px;
 }
 
-button {
+input {
     margin-bottom: 10px;
 }
 
@@ -38,14 +38,12 @@ th {
 td.team {
     text-align: left;
 }
-
 </style>
 </head>
 
 <body>
 
 <h1>Clasificación – Competición 8979 (Grupo 29514)</h1>
-<button onclick="loadData()">Cargar clasificación</button>
 
 <table id="table">
     <thead>
@@ -64,14 +62,22 @@ td.team {
 </table>
 
 <script>
-const CSV_URL = "https://datos.madrid.es/egob/catalogo/211549-1-juegos-deportivos-actual.csv";
 const TARGET_COMPETITION = "8979";
 const TARGET_GROUP = "29514";
 
-async function loadData() {
-    const resp = await fetch(CSV_URL);
-    const text = await resp.text();
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("clasificaciones.csv")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.text();
+        })
+        .then(text => processCSV(text))
+        .catch(error => console.error("Error loading CSV:", error));
+});
 
+function processCSV(text) {
     const rows = parseCSV(text);
     const header = rows[0];
     const data = rows.slice(1);
@@ -104,11 +110,11 @@ async function loadData() {
     }
 
     if (filtered.length === 0) {
-        alert("No data found for selected competition/group");
+        alert("No data found for this competition/group");
     }
 }
 
-/* Minimal CSV parser for semicolon-separated files */
+/* Simple CSV parser for semicolon-separated files */
 function parseCSV(text) {
     return text
         .trim()
