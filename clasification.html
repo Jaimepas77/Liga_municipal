@@ -2,51 +2,93 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clasificación – Juegos Deportivos Madrid</title>
 
 <style>
 body {
-    font-family: system-ui, sans-serif;
-    margin: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
 h1 {
-    font-size: 18px;
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 16px;
 }
 
-input {
-    margin-bottom: 10px;
+/* Actions Container */
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: #0066cc;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.download-btn:hover {
+    background: #0052a3;
+}
+
+/* Table Wrapper for horizontal scrolling */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: white;
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
-    max-width: 420px;
+    min-width: 600px; /* Ensures table doesn't squash too much */
 }
 
 th, td {
-    border: 1px solid #ccc;
-    padding: 4px 6px;
+    border-bottom: 1px solid #eee;
+    padding: 12px 8px;
     text-align: center;
-    font-size: 13px;
+    font-size: 14px;
+    white-space: nowrap;
 }
 
 th {
-    background: #f0f0f0;
+    background: #f4f4f4;
+    font-weight: 600;
+    color: #555;
+    position: sticky;
+    top: 0;
 }
 
 td.team {
     text-align: left;
+    font-weight: 500;
+    min-width: 150px;
+    white-space: normal; /* Allow team names to wrap if needed */
 }
-.download-btn {
-    display: inline-block;
-    margin: 8px 0 12px 0;
-    padding: 6px 10px;
-    background: #0b5fff;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 13px;
+
+/* Highlight row style */
+tr.highlight {
+    font-weight: bold;
+    background-color: #fff8e1;
 }
 </style>
 </head>
@@ -55,9 +97,12 @@ td.team {
 
 <h1>Clasificación – Competición 8979 (Grupo 29514)</h1>
 
-<a class="download-btn" href="ficha.pdf" download="ficha.pdf">Descargar ficha (PDF)</a>
+<div class="actions">
+    <a class="download-btn" href="ficha.pdf" download="ficha.pdf">Descargar ficha (PDF)</a>
+</div>
 
-<table id="table">
+<div class="table-wrapper">
+    <table id="table">
     <thead>
         <tr>
             <th>Pos</th>
@@ -72,6 +117,7 @@ td.team {
     </thead>
     <tbody></tbody>
 </table>
+</div>
 
 <script>
 const TARGET_COMPETITION = "8979";
@@ -109,7 +155,7 @@ function processCSV(text) {
     for (const r of filtered) {
         const tr = document.createElement("tr");
         if (r[idx.Nombre_equipo].includes("ATOCHA")) {
-            tr.style.fontWeight = "bold";
+            tr.classList.add("highlight");
         }
         tr.innerHTML = `
             <td>${r[idx.Posicion]}</td>
