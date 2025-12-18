@@ -108,6 +108,9 @@ function processCSV(text) {
 
     for (const r of filtered) {
         const tr = document.createElement("tr");
+        if (r[idx.Nombre_equipo].includes("ATOCHA")) {
+            tr.style.fontWeight = "bold";
+        }
         tr.innerHTML = `
             <td>${r[idx.Posicion]}</td>
             <td class="team">${r[idx.Nombre_equipo]}</td>
