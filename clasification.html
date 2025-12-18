@@ -99,7 +99,7 @@ function processCSV(text) {
         tr.innerHTML = `
             <td>${r[idx.Posicion]}</td>
             <td class="team">${r[idx.Nombre_equipo]}</td>
-            <td>${r[idx.Puntos]}</td>
+            <td>${parseFloat(r[idx.Puntos])}</td>
             <td>${r[idx.Partidos_ganados]}</td>
             <td>${r[idx.Partidos_empatados]}</td>
             <td>${r[idx.Partidos_perdidos]}</td>
