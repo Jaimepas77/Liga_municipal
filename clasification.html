@@ -132,14 +132,22 @@ tr.highlight {
 }
 
 .dorsal-item {
-    padding: 8px 0;
+    padding: 12px 0;
     border-bottom: 1px solid #eee;
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    font-size: 18px; /* Bigger font size */
 }
 .dorsal-number {
     font-weight: bold;
     color: #0066cc;
+    margin-right: 15px;
+    min-width: 40px;
+    text-align: right;
+    font-size: 20px; /* Even bigger for number */
+}
+.dorsal-name {
+    font-weight: 500;
 }
 </style>
 </head>
@@ -222,34 +230,40 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(res => res.text())
             .then(text => {
                 const lines = text.split("\n");
-                let html = "";
+                const players = [];
                 
                 lines.forEach(line => {
                     line = line.trim();
                     if (!line) return;
 
-                    // Check if it's a header (doesn't contain "Número")
-                    if (!line.toLowerCase().includes("número")) {
-                        html += `<h3>${line}</h3>`;
-                    } else {
-                        // Parse line: Talla M - Nombre: Prats - Número 22
-                        // Regex to capture Name and Number flexibly
-                        const match = line.match(/Nombre\s*:\s*(.+?)\s*-\s*Número\s*:?\s*(\d+)/i);
-                        if (match) {
-                            const name = match[1].trim();
-                            const number = match[2].trim();
-                            html += `
-                                <div class="dorsal-item">
-                                    <span>${name}</span>
-                                    <span class="dorsal-number">#${number}</span>
-                                </div>
-                            `;
-                        } else {
-                            // Fallback for lines that don't match perfectly but have content
-                            html += `<div class="dorsal-item">${line}</div>`;
-                        }
+                    // Parse line: Talla M - Nombre: Prats - Número 22
+                    // Regex to capture Name and Number flexibly
+                    const match = line.match(/Nombre\s*:\s*(.+?)\s*-\s*Número\s*:?\s*(\d+)/i);
+                    if (match) {
+                        const name = match[1].trim();
+                        const number = parseInt(match[2].trim(), 10);
+                        players.push({ name, number });
                     }
                 });
+
+                // Sort by number
+                players.sort((a, b) => a.number - b.number);
+
+                // Generate HTML
+                let html = "";
+                if (players.length === 0) {
+                    html = "<p>No se encontraron dorsales.</p>";
+                } else {
+                    players.forEach(p => {
+                        html += `
+                            <div class="dorsal-item">
+                                <span class="dorsal-number">#${p.number}</span>
+                                <span class="dorsal-name">${p.name}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
                 listContainer.innerHTML = html;
             })
             .catch(err => {
