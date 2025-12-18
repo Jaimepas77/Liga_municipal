@@ -154,7 +154,7 @@ tr.highlight {
 
 <body>
 
-<h1>Clasificación – Competición 8979 (Grupo 29514)</h1>
+<h1 id="page-title">Clasificación – Competición 8979 (Grupo 29514)</h1>
 
 <div class="actions">
     <a class="download-btn" href="ficha.pdf" download="ficha.pdf">Descargar ficha (PDF)</a>
@@ -189,10 +189,16 @@ tr.highlight {
 </div>
 
 <script>
-const TARGET_COMPETITION = "8979";
-const TARGET_GROUP = "29514";
+const urlParams = new URLSearchParams(window.location.search);
+const TARGET_COMPETITION = urlParams.get('competition') || "8979";
+const TARGET_GROUP = urlParams.get('group') || "29514";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Update title with current competition/group
+    const titleElement = document.getElementById('page-title');
+    if (titleElement) {
+        titleElement.textContent = `Clasificación – Competición ${TARGET_COMPETITION} (Grupo ${TARGET_GROUP})`;
+    }
     // Load CSV
     fetch("clasificaciones.csv")
         .then(response => {
