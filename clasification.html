@@ -81,7 +81,7 @@ th {
 td.team {
     text-align: left;
     font-weight: 500;
-    min-width: 150px;
+    min-width: 100px;
     white-space: normal; /* Allow team names to wrap if needed */
 }
 
@@ -89,6 +89,57 @@ td.team {
 tr.highlight {
     font-weight: bold;
     background-color: #fff8e1;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.5); 
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dorsal-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+}
+.dorsal-number {
+    font-weight: bold;
+    color: #0066cc;
 }
 </style>
 </head>
@@ -99,6 +150,7 @@ tr.highlight {
 
 <div class="actions">
     <a class="download-btn" href="ficha.pdf" download="ficha.pdf">Descargar ficha (PDF)</a>
+    <button id="btn-dorsales" class="download-btn" style="background-color: #28a745; border: none; cursor: pointer;">Ver Dorsales</button>
 </div>
 
 <div class="table-wrapper">
@@ -119,11 +171,21 @@ tr.highlight {
 </table>
 </div>
 
+<!-- Modal for Dorsales -->
+<div id="modal-dorsales" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Listado de Dorsales</h2>
+        <div id="dorsales-list">Cargando...</div>
+    </div>
+</div>
+
 <script>
 const TARGET_COMPETITION = "8979";
 const TARGET_GROUP = "29514";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Load CSV
     fetch("clasificaciones.csv")
         .then(response => {
             if (!response.ok) {
@@ -133,6 +195,68 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(text => processCSV(text))
         .catch(error => console.error("Error loading CSV:", error));
+
+    // Modal Logic
+    const modal = document.getElementById("modal-dorsales");
+    const btn = document.getElementById("btn-dorsales");
+    const span = document.getElementsByClassName("close")[0];
+    const listContainer = document.getElementById("dorsales-list");
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+        loadDorsales();
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function loadDorsales() {
+        fetch("numeros.txt")
+            .then(res => res.text())
+            .then(text => {
+                const lines = text.split("\n");
+                let html = "";
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+
+                    // Check if it's a header (doesn't contain "Número")
+                    if (!line.toLowerCase().includes("número")) {
+                        html += `<h3>${line}</h3>`;
+                    } else {
+                        // Parse line: Talla M - Nombre: Prats - Número 22
+                        // Regex to capture Name and Number flexibly
+                        const match = line.match(/Nombre\s*:\s*(.+?)\s*-\s*Número\s*:?\s*(\d+)/i);
+                        if (match) {
+                            const name = match[1].trim();
+                            const number = match[2].trim();
+                            html += `
+                                <div class="dorsal-item">
+                                    <span>${name}</span>
+                                    <span class="dorsal-number">#${number}</span>
+                                </div>
+                            `;
+                        } else {
+                            // Fallback for lines that don't match perfectly but have content
+                            html += `<div class="dorsal-item">${line}</div>`;
+                        }
+                    }
+                });
+                listContainer.innerHTML = html;
+            })
+            .catch(err => {
+                listContainer.innerHTML = "Error loading file.";
+                console.error(err);
+            });
+    }
 });
 
 function processCSV(text) {
